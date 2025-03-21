@@ -1,0 +1,7 @@
+import boto3
+import pandas as pd
+s3 = boto3.client('s3')
+bucket = 'fraud-detection-bucket'
+file = 'transactions.csv'
+obj = s3.get_object(Bucket=bucket, Key=file)
+df = pd.read_csv(obj['Body'])
