@@ -1,0 +1,32 @@
+import json
+import boto3
+import numpy as np
+
+sagemaker_runtime = boto3.client('sagemaker-runtime')
+
+def lambda_handler(event, context):
+    transaction = json.loads(event['body'])  # Incoming transaction data
+    payload = json.dumps(transaction)
+
+    response = sagemaker_runtime.invoke_endpoint(
+        EndpointName="fraud-detection-endpoint",
+        ContentType="application/json",
+        Body=payload
+    )
+
+    prediction = json.loads(response['Body'].read().decode())
+    
+    if prediction["fraud"] == 1:
+        send_alert(transaction)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps({"fraud": prediction["fraud"]})
+    }
+
+def send_alert(transaction):
+    sns = boto3.client('sns')
+    sns.publish(
+        TopicArn="arn:aws:sns:your-region:your-account-id:FraudAlerts",
+        Message=f"Fraudulent transaction detected: {transaction}"
+    )
