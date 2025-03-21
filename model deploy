@@ -1,0 +1,18 @@
+import joblib
+import sagemaker
+from sagemaker.sklearn import SKLearnModel
+
+joblib.dump(model, "fraud_model.pkl")
+
+
+s3.upload_file("fraud_model.pkl", bucket, "fraud_model.pkl")
+
+
+sklearn_model = SKLearnModel(
+    model_data=f"s3://{bucket}/fraud_model.pkl",
+    role='arn:aws:iam::your-account-id:role/service-role/AmazonSageMaker-ExecutionRole',
+    entry_point='inference.py',  # Custom inference script
+    framework_version='0.23-1'
+)
+
+predictor = sklearn_model.deploy(instance_type="ml.m5.large")
