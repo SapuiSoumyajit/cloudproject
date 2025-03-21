@@ -1,0 +1,12 @@
+import sys
+from pyspark.sql import SparkSession
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from awsglue.dynamicframe import DynamicFrame
+
+spark = SparkSession.builder.appName("FraudDetectionETL").getOrCreate()
+
+df = spark.read.csv("s3://fraud-detection-bucket/transactions.csv", header=True, inferSchema=True)
+df_cleaned = df.dropna()
+
+df_cleaned.write.mode("overwrite").parquet("s3://fraud-detection-bucket/cleaned_data/")
