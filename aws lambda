@@ -1,0 +1,17 @@
+import json
+import boto3
+
+sagemaker_runtime = boto3.client('sagemaker-runtime')
+
+def lambda_handler(event, context):
+    transaction = json.loads(event['body'])
+    response = sagemaker_runtime.invoke_endpoint(
+        EndpointName="fraud-detection-endpoint",
+        ContentType="application/json",
+        Body=json.dumps(transaction)
+    )
+    prediction = json.loads(response['Body'].read().decode())
+    return {
+        'statusCode': 200,
+        'body': json.dumps({"fraud": prediction["fraud"]})
+    }
